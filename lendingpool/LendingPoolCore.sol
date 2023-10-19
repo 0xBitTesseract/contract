@@ -12,7 +12,7 @@ import "../libraries/CoreLibrary.sol";
 import "../libraries/EthAddressLib.sol";
 import "../libraries/WadRayMath.sol";
 import "../configuration/LendingPoolAddressesProvider.sol";
-import "../tokenization/Btoken.sol";
+import "../tokenization/BToken.sol";
 import "../interfaces/ILendingRateOracle.sol";
 import "../interfaces/IReserveInterestRateStrategy.sol";
 
@@ -367,7 +367,7 @@ contract LendingPoolCore is InitializableWithSlot {
         view
         returns (uint256)
     {
-        Btoken bToken = Btoken(reserves[_reserve].bTokenAddress);
+        BToken bToken = BToken(reserves[_reserve].bTokenAddress);
         return bToken.balanceOf(_user);
     }
 
@@ -378,7 +378,7 @@ contract LendingPoolCore is InitializableWithSlot {
         return reserve.interestRateStrategyAddress;
     }
 
-    function getReserveBtokenAddress(address _reserve)
+    function getReserveBTokenAddress(address _reserve)
         public 
         view
         returns (address)

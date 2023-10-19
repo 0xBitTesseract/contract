@@ -66,6 +66,7 @@ contract BToken is ERC20 {
     );
 
     address public underlyingAssetAddress;
+    uint8 public underlyingAssetDecimals;
 
     mapping (address => uint256) private userIndexes;
 
