@@ -8,14 +8,14 @@ import "../proxys/InitializableWithSlot.sol";
 
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "./LendingPoolCore.sol";
-import "../tokenization/BToken.sol";
+import "../tokenization/MToken.sol";
 
 contract LendingPoolConfigurator is InitializableWithSlot {
     using SafeMath for uint256;
 
     event ReserveInitialized(
         address indexed _reserve,
-        address indexed _bToken,
+        address indexed _mToken,
         address _interestRateStrategyAddress
     );
 
@@ -79,13 +79,13 @@ contract LendingPoolConfigurator is InitializableWithSlot {
     ) external onlyLendingPoolManager {
         ERC20 asset = ERC20(_reserve);
 
-        string memory bTokenName = string(abi.encodePacked("Biansun Interest bearing", asset.name()));
-        string memory bTokenSymbol = string(abi.encodePacked("b", asset.symbol()));
+        string memory mTokenName = string(abi.encodePacked("Biansun Interest bearing", asset.name()));
+        string memory mTokenSymbol = string(abi.encodePacked("b", asset.symbol()));
 
         initReserveWithData(
             _reserve,
-            bTokenName,
-            bTokenSymbol,
+            mTokenName,
+            mTokenSymbol,
             _underlyingAssetDecimals,
             _interestRateStrategyAddress
         );
@@ -93,30 +93,30 @@ contract LendingPoolConfigurator is InitializableWithSlot {
 
     function initReserveWithData(
         address _reserve,
-        string memory _bTokenName,
-        string memory _bTokenSymbol,
+        string memory _mTokenName,
+        string memory _mTokenSymbol,
         uint8 _underlyingAssetDecimals,
         address _interestRateStrategyAddress
     ) public onlyLendingPoolManager {
         LendingPoolCore core = LendingPoolCore(payable(poolAddressesProvider.getLendingPoolCore()));
 
-        BToken bTokenInstance = new BToken(
+        MToken mTokenInstance = new MToken(
             poolAddressesProvider,
             _reserve,
             _underlyingAssetDecimals,
-            _bTokenName,
-            _bTokenSymbol
+            _mTokenName,
+            _mTokenSymbol
         );
         core.initReserve(
             _reserve,
-            address(bTokenInstance),
+            address(mTokenInstance),
             _underlyingAssetDecimals,
             _interestRateStrategyAddress
         );
 
         emit ReserveInitialized( 
             _reserve,
-            address(bTokenInstance),
+            address(mTokenInstance),
             _interestRateStrategyAddress
         );
     }

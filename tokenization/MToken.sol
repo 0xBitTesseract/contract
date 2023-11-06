@@ -12,7 +12,7 @@ import "../lendingpool/LendingPoolCore.sol";
 import "../libraries/WadRayMath.sol";
 
 
-contract BToken is ERC20 {
+contract MToken is ERC20 {
     using WadRayMath for uint256;
     using SafeMath for uint256;
 

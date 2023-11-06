@@ -10,7 +10,7 @@ import "../libraries/WadRayMath.sol";
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "../interfaces/IPriceOracleGetter.sol";
 import "../interfaces/IFeeProvider.sol";
-import "../tokenization/BToken.sol";
+import "../tokenization/MToken.sol";
 
 import "./LendingPoolCore.sol";
 
@@ -293,7 +293,7 @@ contract LendingPoolDataProvider is InitializableWithSlot {
         uint256 utilizationRate;
         uint256 liquidityIndex;
         uint256 variableBorrowIndex;
-        address bTokenAddress;
+        address mTokenAddress;
         uint40 lastUpdateTimestamp;
     }
 
@@ -317,7 +317,7 @@ contract LendingPoolDataProvider is InitializableWithSlot {
         data.utilizationRate = core.getReserveUtilizationRate(_reserve);
         data.liquidityIndex = core.getReserveLiquidityCumulativeIndex(_reserve);
         data.variableBorrowIndex = core.getReserveVariableBorrowsCumulativeIndex(_reserve);
-        data.bTokenAddress = core.getReserveBTokenAddress(_reserve);
+        data.mTokenAddress = core.getReserveMTokenAddress(_reserve);
         data.lastUpdateTimestamp = core.getReserveLastUpdate(_reserve);
 
         return data;
@@ -360,7 +360,7 @@ contract LendingPoolDataProvider is InitializableWithSlot {
         external
         view 
         returns (
-            uint256 currentBTokenBalance,
+            uint256 currentMTokenBalance,
             uint256 currentBorrowBalance,
             uint256 principalBorrowBalance,
             uint256 borrowRateMode,
@@ -372,7 +372,7 @@ contract LendingPoolDataProvider is InitializableWithSlot {
             bool usageAsCollateralEnabled
         )
     {
-        currentBTokenBalance = BToken(core.getReserveBTokenAddress(_reserve)).balanceOf(_user);
+        currentMTokenBalance = MToken(core.getReserveMTokenAddress(_reserve)).balanceOf(_user);
         CoreLibrary.InterestRateMode mode = core.getUserCurrentBorrowRateMode(_reserve, _user);
         (principalBorrowBalance, currentBorrowBalance, ) = core.getUserBorrowBalances(_reserve, _user);
 

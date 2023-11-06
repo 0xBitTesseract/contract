@@ -12,7 +12,7 @@ import "../libraries/CoreLibrary.sol";
 import "../libraries/EthAddressLib.sol";
 import "../libraries/WadRayMath.sol";
 import "../configuration/LendingPoolAddressesProvider.sol";
-import "../tokenization/BToken.sol";
+import "../tokenization/MToken.sol";
 import "../interfaces/ILendingRateOracle.sol";
 import "../interfaces/IReserveInterestRateStrategy.sol";
 
@@ -186,7 +186,7 @@ contract LendingPoolCore is InitializableWithSlot {
         uint256 _feeLiquidated,
         uint256 _liquidatedCollateralForFee,
         uint256 _balanceIncrease,
-        bool _liquidatorReceivesBtoken
+        bool _liquidatorReceivesMtoken
     ) external onlyLendingPool {
         updatePrincipalReserveStateOnLiquidationInternal(
             _principalReserve,
@@ -209,7 +209,7 @@ contract LendingPoolCore is InitializableWithSlot {
 
         updateReserveInterestRatesAndTimestampInternal(_principalReserve, _amountToLiquidate, 0);
 
-        if(!_liquidatorReceivesBtoken) {
+        if(!_liquidatorReceivesMtoken) {
             updateReserveInterestRatesAndTimestampInternal(
                 _collateralReserve,
                 0,
@@ -367,8 +367,8 @@ contract LendingPoolCore is InitializableWithSlot {
         view
         returns (uint256)
     {
-        BToken bToken = BToken(reserves[_reserve].bTokenAddress);
-        return bToken.balanceOf(_user);
+        MToken mToken = MToken(reserves[_reserve].mTokenAddress);
+        return mToken.balanceOf(_user);
     }
 
     function getReserveInterestRateStrategyAddress(address _reserve)
@@ -378,13 +378,13 @@ contract LendingPoolCore is InitializableWithSlot {
         return reserve.interestRateStrategyAddress;
     }
 
-    function getReserveBTokenAddress(address _reserve)
+    function getReserveMTokenAddress(address _reserve)
         public 
         view
         returns (address)
     {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-        return reserve.bTokenAddress;
+        return reserve.mTokenAddress;
     }
 
     function getReserveAvailableLiquidity(address _reserve) public view returns(uint256) {
@@ -643,11 +643,11 @@ contract LendingPoolCore is InitializableWithSlot {
         refreshConfigInternal();
     }
 
-    function initReserve(address _reserve, address _bTokenAddress, uint256 _decimals, address _interestRateStrategyAddress)
+    function initReserve(address _reserve, address _mTokenAddress, uint256 _decimals, address _interestRateStrategyAddress)
         external
         onlyLendingPoolConfigurator
     {
-        reserves[_reserve].init(_bTokenAddress, _decimals, _interestRateStrategyAddress);
+        reserves[_reserve].init(_mTokenAddress, _decimals, _interestRateStrategyAddress);
         addReserveToListInternal(_reserve);
     }
 
@@ -659,7 +659,7 @@ contract LendingPoolCore is InitializableWithSlot {
         require(getReserveTotalBorrows(lastReserve) == 0, "Cannot remove a reserve with liquidity deposited");
 
         reserves[lastReserve].isActive = false;
-        reserves[lastReserve].bTokenAddress = address(0);
+        reserves[lastReserve].mTokenAddress = address(0);
         reserves[lastReserve].decimals = 0;
         reserves[lastReserve].lastLiquidityCumulativeIndex = 0;
         reserves[lastReserve].lastVariableBorrowCumulativeIndex = 0;

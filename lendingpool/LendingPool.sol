@@ -10,7 +10,7 @@ import "../proxys/InitializableWithSlot.sol";
 
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "../configuration/LendingPoolParametersProvider.sol";
-import "../tokenization/BToken.sol";
+import "../tokenization/MToken.sol";
 import "../libraries/CoreLibrary.sol";
 import "../libraries/WadRayMath.sol";
 import "../libraries/EthAddressLib.sol";
@@ -107,14 +107,14 @@ contract LendingPool is ReentrancyGuard, InitializableWithSlot {
         uint256 _liquidatedCollateralAmount,
         uint256 _accruedBorrowInterest,
         address _liquidator,
-        bool _receiveBToken,
+        bool _receiveMToken,
         uint256 _timestamp
     );
 
-    modifier onlyOverlyingBToken(address _reserve) {
+    modifier onlyOverlyingMToken(address _reserve) {
         require(
-            msg.sender == core.getReserveBTokenAddress(_reserve),
-            "The caller of this function can only be the bToken contract of this reserve"
+            msg.sender == core.getReserveMTokenAddress(_reserve),
+            "The caller of this function can only be the mToken contract of this reserve"
         );
         _;
     }
@@ -154,13 +154,13 @@ contract LendingPool is ReentrancyGuard, InitializableWithSlot {
         onlyUnfreezedReserve(_reserve)
         onlyAmountGreaterThanZero(_amount)
     {
-        BToken bToken = BToken(core.getReserveBTokenAddress(_reserve));
+        MToken mToken = MToken(core.getReserveMTokenAddress(_reserve));
 
-        bool isFirstDeposit = bToken.balanceOf(msg.sender) == 0;
+        bool isFirstDeposit = mToken.balanceOf(msg.sender) == 0;
 
         core.updateStateOnDeposit(_reserve, msg.sender, _amount, isFirstDeposit);
 
-        bToken.mintOnDeposit(msg.sender, _amount);
+        mToken.mintOnDeposit(msg.sender, _amount);
 
         core.transferToReserve{value: msg.value}(_reserve, payable(msg.sender), _amount);
 
@@ -172,11 +172,11 @@ contract LendingPool is ReentrancyGuard, InitializableWithSlot {
         address _reserve,
         address payable _user,
         uint256 _amount,
-        uint256 _bTokenBalanceAfterRedeem
+        uint256 _mTokenBalanceAfterRedeem
     ) 
         external 
         nonReentrant 
-        onlyOverlyingBToken(_reserve)
+        onlyOverlyingMToken(_reserve)
         onlyActiveReserve(_reserve)
         onlyAmountGreaterThanZero(_amount)
     {
@@ -186,7 +186,7 @@ contract LendingPool is ReentrancyGuard, InitializableWithSlot {
             "There is not enough liquidity available to redeem"
         );
 
-        core.updateStateOnRedeem(_reserve, _user, _amount, _bTokenBalanceAfterRedeem == 0);
+        core.updateStateOnRedeem(_reserve, _user, _amount, _mTokenBalanceAfterRedeem == 0);
 
         core.transferToUser(_reserve, _user, _amount);
 
@@ -572,7 +572,7 @@ contract LendingPool is ReentrancyGuard, InitializableWithSlot {
         address _reserve,
         address _user,
         uint256 _purchaseAmount,
-        bool _receiveBToken
+        bool _receiveMToken
     ) 
         external 
         payable 
@@ -592,7 +592,7 @@ contract LendingPool is ReentrancyGuard, InitializableWithSlot {
                 _reserve,
                 _user,
                 _purchaseAmount,
-                _receiveBToken
+                _receiveMToken
             )
         );
         require(success, "Liquidation call failed");
@@ -654,7 +654,7 @@ contract LendingPool is ReentrancyGuard, InitializableWithSlot {
         external
         view
         returns (
-            uint256 currentBTokenBalance,
+            uint256 currentMTokenBalance,
             uint256 currentBorrowBalance,
             uint256 principalBorrowBalance,
             uint256 borrowRateMode,

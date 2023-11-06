@@ -55,9 +55,9 @@ library CoreLibrary {
         //the decimals of the reserve asset
         uint256 decimals;
         /**
-        * @dev address of the bToken representing the asset
+        * @dev address of the mToken representing the asset
         **/
-        address bTokenAddress;
+        address mTokenAddress;
         /**
         * @dev address of the interest rate strategy contract
         **/
@@ -126,11 +126,11 @@ library CoreLibrary {
 
     function init(
         ReserveData storage _self,
-        address _bTokenAddress,
+        address _mTokenAddress,
         uint256 _decimals,
         address _interestRateStrategyAddress
     ) external {
-        require(_self.bTokenAddress == address(0), "Reserve has already been initialized!");
+        require(_self.mTokenAddress == address(0), "Reserve has already been initialized!");
 
         if(_self.lastLiquidityCumulativeIndex == 0) {
             _self.lastLiquidityCumulativeIndex = WadRayMath.ray();
@@ -140,7 +140,7 @@ library CoreLibrary {
             _self.lastVariableBorrowCumulativeIndex = WadRayMath.ray();
         }
 
-        _self.bTokenAddress = _bTokenAddress;
+        _self.mTokenAddress = _mTokenAddress;
         _self.decimals = _decimals;
 
         _self.interestRateStrategyAddress = _interestRateStrategyAddress;

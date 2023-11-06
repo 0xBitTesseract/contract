@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "../proxys/InitializableWithSlot.sol";
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "../configuration/LendingPoolParametersProvider.sol";
-import "../tokenization/BToken.sol";
+import "../tokenization/MToken.sol";
 import "../libraries/CoreLibrary.sol";
 import "../libraries/WadRayMath.sol";
 import "../interfaces/IPriceOracleGetter.sol";
@@ -47,7 +47,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, InitializableWithSlot
         uint256 _liquidatedCollateralAmount,
         uint256 _accruedBorrowInterest,
         address _liquidator,
-        bool _receiveBToken,
+        bool _receiveMToken,
         uint256 _timestamp
     );
 
@@ -84,7 +84,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, InitializableWithSlot
         address _reserve,
         address _user,
         uint256 _purchaseAmount,
-        bool _receiveBToken
+        bool _receiveMToken
     ) external payable returns (uint256, string memory) {
         LiquidationCallLocalVars memory vars;
 
@@ -170,7 +170,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, InitializableWithSlot
         }
 
         //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
-        if(!_receiveBToken) {
+        if(!_receiveMToken) {
             uint256 currentAvailableCollateral = core.getReserveAvailableLiquidity(_collateral);
             if(currentAvailableCollateral < maxCollateralToLiquidate) {
                 return (
@@ -189,18 +189,18 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, InitializableWithSlot
             vars.feeLiquidated,
             vars.liquidatedCollateralForFee,
             vars.borrowBalanceIncrease,
-            _receiveBToken
+            _receiveMToken
         );
 
-        BToken collateralBtoken = BToken(core.getReserveBTokenAddress(_collateral));
+        MToken collateralMtoken = MToken(core.getReserveMTokenAddress(_collateral));
 
-        //if liquidator reclaims the bToken, he receives the equivalent btoken amount
-        if(_receiveBToken) {
-            collateralBtoken.transferOnLiquidation(_user, msg.sender, maxCollateralToLiquidate);
+        //if liquidator reclaims the mToken, he receives the equivalent mtoken amount
+        if(_receiveMToken) {
+            collateralMtoken.transferOnLiquidation(_user, msg.sender, maxCollateralToLiquidate);
         } else {
             //otherwise receives the underlying asset
-            //burn the equivalent amount of btoken
-            collateralBtoken.burnOnLiquidation(_user, maxCollateralToLiquidate);
+            //burn the equivalent amount of mtoken
+            collateralMtoken.burnOnLiquidation(_user, maxCollateralToLiquidate);
             core.transferToUser(_collateral, payable(msg.sender), maxCollateralToLiquidate);
         }
 
@@ -208,8 +208,8 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, InitializableWithSlot
 
         if(vars.feeLiquidated > 0) {
             //if there is enough collateral to liquidate the fee, first transfer burn an equivalent amount of
-            //bTokens of the user
-            collateralBtoken.burnOnLiquidation(_user, vars.liquidatedCollateralForFee);
+            //mTokens of the user
+            collateralMtoken.burnOnLiquidation(_user, vars.liquidatedCollateralForFee);
 
             //then liquidate the fee by transferring it to the fee collection address
             core.liquidateFee(
@@ -236,7 +236,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, InitializableWithSlot
             maxCollateralToLiquidate,
             vars.borrowBalanceIncrease,
             msg.sender,
-            _receiveBToken,
+            _receiveMToken,
             //solium-disable-next-line
             block.timestamp
         );
