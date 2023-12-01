@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 contract TokenDistributor is ReentrancyGuard {
     using SafeMath for uint256;
@@ -34,7 +35,7 @@ contract TokenDistributor is ReentrancyGuard {
 
     address public recipientBurn;
 
-    function initialize(address[] memory _receivers, uint256[] memory _percentages) public {
+    function initialize(address[] memory _receivers, uint256[] memory _percentages) public initializer {
         internalSetTokenDistribution(_receivers, _percentages);// percentage express in x/10000
         
     }
