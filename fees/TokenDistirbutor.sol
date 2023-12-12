@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-contract TokenDistributor is ReentrancyGuard {
+contract TokenDistributor is ReentrancyGuard, Initializable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 

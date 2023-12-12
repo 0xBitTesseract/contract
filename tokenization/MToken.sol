@@ -323,6 +323,9 @@ contract MToken is ERC20 {
 
     function balanceOf(address _user) public override view returns (uint256) {
         uint256 currentPrincipalBalance = super.balanceOf(_user);
+        if (currentPrincipalBalance == 0) {
+            return 0;
+        }
         return calculateCumulatedBalanceInternal(_user, currentPrincipalBalance);
     }
 }
